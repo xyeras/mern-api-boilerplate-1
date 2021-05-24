@@ -2,7 +2,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import cors from 'cors';
+import logger from 'morgan';
 import { userRoute } from './routes/user.js';
+import { authRoute } from './routes/auth.js';
+import { authProtect } from './services/privateRoute.js';
 
 dotenv.config();
 
@@ -25,7 +29,12 @@ mongoose
 const app = express();
 
 // MIDDLEWARE
+app.use(cors());
+app.use(logger('dev'));
 app.use(express.json());
+
+// Auth Protect Middleware
+app.use((req, res, next) => authProtect(req, res, next));
 
 // ROUTES
 app.get('/', (req, res) => {
@@ -33,7 +42,8 @@ app.get('/', (req, res) => {
   res.send("Hey we're in the browser now!");
 });
 
-app.use('/user', userRoute);
+app.use('/api/v1/user', userRoute);
+app.use('/api/v1/auth', authRoute);
 
 // LISTEN
 app.listen(process.env.PORT || 8001);
